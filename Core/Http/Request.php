@@ -148,9 +148,20 @@ class Request
         return $scheme . '://' . $this->server('HTTP_HOST') . $this->url();
     }
 
+    public function scheme()
+    {
+        $schema = $this->server('REQUEST_SCHEME');
+
+        if ($schema !== '://') {
+            return $this->isSecure() ? 'https' : 'http';
+        }
+
+        return $schema;
+    }
+
     public function baseUrl()
     {
-        return $this->server('REQUEST_SCHEME') . '://' . $this->server('HTTP_HOST');
+        return $this->scheme() . '://' . $this->server('HTTP_HOST');
     }
 
     public function ip()
