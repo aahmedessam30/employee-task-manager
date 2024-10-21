@@ -154,11 +154,11 @@ abstract class Model
         $this->setAttribute(static::$primaryKey, $id);
     }
 
-    protected function update(): void
+    protected function update($columns = []): void
     {
         static::query()
               ->where(static::$primaryKey, $this->getAttribute(static::$primaryKey))
-              ->update($this->attributes);
+              ->update($columns ?: $this->attributes);
     }
 
     protected static function createModelInstance(array $attributes): static

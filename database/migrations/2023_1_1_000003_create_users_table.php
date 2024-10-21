@@ -2,6 +2,7 @@
 
 namespace Database\Migrations;
 
+use App\Enums\RoleEnum;
 use Core\Database\{Blueprint, Migration, Schema};
 
 return new class extends Migration {
@@ -13,6 +14,7 @@ return new class extends Migration {
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('role')->default(RoleEnum::EMPLOYEE->value);
             $table->rememberToken();
             $table->timestamps();
         });

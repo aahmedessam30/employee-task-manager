@@ -12,6 +12,10 @@ class MiddlewareStack
     public function push($middleware)
     {
         if (is_string($middleware)) {
+            if (config('middleware.alias.' . $middleware)) {
+                $middleware = config('middleware.alias.' . $middleware);
+            }
+
             $middleware = new $middleware();
         }
 

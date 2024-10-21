@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Requests;
+namespace App\Requests\Department;
 
 use Core\Http\FormRequest;
 
-class StoreUserRequest extends FormRequest
+class StoreDepartmentRequest extends FormRequest
 {
     public function authorize(): bool
     {
