@@ -242,4 +242,20 @@ class Route
     {
         return static::$router->getRoutes();
     }
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function uri($params = [])
+    {
+        $uri = $this->uri;
+
+        foreach ($params as $key => $value) {
+            $uri = str_replace("{{$key}}", $value, $uri);
+        }
+
+        return $uri;
+    }
 }

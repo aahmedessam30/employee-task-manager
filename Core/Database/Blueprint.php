@@ -42,9 +42,9 @@ class Blueprint
         return $this;
     }
 
-    protected function addColumn(string $name, string $type)
+    protected function addColumn(string $name, string $type, $table = null)
     {
-        $this->columns[] = new Column($name, $type);
+        $this->columns[] = new Column($name, $type, $table ?? $this->table);
         return end($this->columns);
     }
 
@@ -53,9 +53,9 @@ class Blueprint
         return $this->addColumn($column, 'INT UNSIGNED AUTO_INCREMENT PRIMARY KEY');
     }
 
-    public function id()
+    public function id($column = 'id')
     {
-        return $this->addColumn('id', 'INT UNSIGNED AUTO_INCREMENT PRIMARY KEY');
+        return $this->unsignedBigInteger($column)->autoIncrement()->primary();
     }
 
     public function string(string $column, int $length = 255)
@@ -173,6 +173,16 @@ class Blueprint
         $this->unsignedBigInteger("{$column}_id");
         $this->string("{$column}_type");
         return $this;
+    }
+
+    public function rememberToken()
+    {
+        return $this->addColumn('remember_token', 'VARCHAR(100)');
+    }
+
+    public function foreignId(string $column)
+    {
+        return $this->unsignedBigInteger($column);
     }
 
     public function foreign(string $column, string $table, string $foreignColumn = 'id')

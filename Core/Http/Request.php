@@ -39,7 +39,7 @@ class Request
         }
 
         Session::start();
-        Session::set('_token', bin2hex(random_bytes(32)));
+        Session::set('_token', session()->get('_token') ?? bin2hex(random_bytes(32)));
         Session::set('url', $this->getUri());
         Session::set('previous_url', $this->getReferer());
         Session::set('method', $this->method());
@@ -83,9 +83,9 @@ class Request
         return isset($this->all()[$key]);
     }
 
-    public function only($keys)
+    public function only(...$keys)
     {
-        return array_intersect_key($this->all(), array_flip((array)$keys));
+        return array_intersect_key($this->all(), array_flip($keys));
     }
 
     public function except($keys)

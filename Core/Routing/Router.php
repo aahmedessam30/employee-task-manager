@@ -140,7 +140,7 @@ class Router
         try {
             foreach ($this->routes as $route) {
                 if ($route->matches($request)) {
-                    $route->run($request);
+                    $route->run($request)->send();
                     return;
                 }
             }

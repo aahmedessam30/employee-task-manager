@@ -137,7 +137,8 @@ class Response
 
     public function back()
     {
-        $this->headers['Location'] = request()->getReferer() ?? Session::get('previous_url') ?? '/';
+        $url                       = request()->getReferer() ?? session()->get('previous_url') ?? '/';
+        $this->headers['Location'] = str_replace(url(), '', $url);
         $this->headers['Status']   = '302 Found';
         $this->content             = '';
         $this->statusCode          = 302;
@@ -145,8 +146,21 @@ class Response
         return $this;
     }
 
-    public function __destruct()
+    public function with($key, $value)
     {
-        $this->send();
+        Session::flash($key, $value);
+        return $this;
+    }
+
+    public function withErrors($errors)
+    {
+        Session::flash('errors', $errors);
+        return $this;
+    }
+
+    public function withInput()
+    {
+        Session::flash('old', request()->all());
+        return $this;
     }
 }

@@ -29,7 +29,13 @@ class SessionManager
 
     public function get(string $key, $default = null)
     {
-        return $_SESSION[$key] ?? $default;
+        $value = $_SESSION[$key] ?? $_SESSION['_flash'][$key] ?? $default;
+
+        if (isset($_SESSION['_flash'][$key])) {
+            unset($_SESSION['_flash'][$key]);
+        }
+
+        return $value;
     }
 
     public function put(string $key, $value): void
@@ -39,7 +45,7 @@ class SessionManager
 
     public function has(string $key): bool
     {
-        return isset($_SESSION[$key]);
+        return isset($_SESSION[$key]) || isset($_SESSION['_flash'][$key]);
     }
 
     public function remove(string $key): void
@@ -79,7 +85,7 @@ class SessionManager
         session_write_close();
     }
 
-    public function token(): ?string
+    public function csrfToken(): string
     {
         return $this->get('_token');
     }

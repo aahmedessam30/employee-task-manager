@@ -129,7 +129,7 @@ class Authenticate
         return false;
     }
 
-    private function login($user)
+    public function login($user)
     {
         $this->user = $user;
         Session::put('user_id', $user->id);

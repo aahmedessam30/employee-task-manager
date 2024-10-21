@@ -48,6 +48,23 @@ function migrations_path($path = ''): string
     return database_path('migrations' . ($path ? DIRECTORY_SEPARATOR . $path : $path));
 }
 
+function resources_path($path = ''): string
+{
+    return base_path('resources' . ($path ? DIRECTORY_SEPARATOR . $path : $path));
+}
+
+function views_path($path = ''): string
+{
+    return base_path('views' . ($path ? DIRECTORY_SEPARATOR . $path : $path));
+}
+
+function vite_asset($path): string
+{
+    $manifest = json_decode(file_get_contents(public_path('dist/.vite/mainfest.json')), true);
+
+    return $manifest[$path] ?? $path;
+}
+
 function env($key, $default = null)
 {
     return $_ENV[$key] ?? $default;
@@ -93,16 +110,14 @@ function dump(...$vars): void
     }
 }
 
-function redirect($url): void
+function redirect($url): \Core\Http\Response
 {
-    response()->redirect($url);
-    exit;
+    return response()->redirect($url);
 }
 
-function back(): void
+function back(): \Core\Http\Response
 {
-    response()->back();
-    exit;
+    return response()->back();
 }
 
 function response(): \Core\Http\Response
@@ -156,13 +171,16 @@ function pluck($array, $key)
     }, $array);
 }
 
+/**
+ * @throws Exception
+ */
 function view($view, $data = [])
 {
     $view = str_replace('.', DIRECTORY_SEPARATOR, $view);
-    $view = app_path("Views/$view.php");
+    $view = views_path("$view.php");
 
     if (!file_exists($view)) {
-        throw new Exception("View '$view' not found.");
+        throw new Exception(sprintf('View file [%s] not found.', $view));
     }
 
     extract($data);
@@ -180,4 +198,23 @@ function session()
 function auth()
 {
     return new \Core\Auth\Authenticate();
+}
+
+/**
+ * @throws \Random\RandomException
+ */
+function csrf_token()
+{
+    $session = session();
+
+    if (!$session->has('_token')) {
+        $session->put('_token', bin2hex(random_bytes(32)));
+    }
+
+    return $session->get('_token');
+}
+
+function url($path = ''): string
+{
+    return request()->baseUrl() . ($path ? '/' . ltrim($path, '/') : $path);
 }

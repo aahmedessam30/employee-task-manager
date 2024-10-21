@@ -3,7 +3,7 @@
 return [
     'global' => [
         \App\Http\Middleware\TrustHosts::class,
-        \App\Http\Middleware\Cors::class,
+//        \App\Http\Middleware\Cors::class,
     ],
     'api'    => [],
     'web'    => [

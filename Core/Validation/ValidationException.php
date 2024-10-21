@@ -11,9 +11,16 @@ class ValidationException extends RuntimeException
 
     public function __construct(Validator $validator)
     {
+        parent::__construct('The given data was invalid.');
+
         $this->validator = $validator;
         $this->errors    = $validator->errors();
-        parent::__construct('The given data was invalid.');
+
+        if (request()->expectsJson()) {
+            throw $this;
+        }
+
+        back()->withInput()->withErrors($this->errors)->send();
     }
 
     public function validator(): Validator
