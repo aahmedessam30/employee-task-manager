@@ -4,6 +4,7 @@ namespace Core\Database;
 
 use PDO;
 use Core\Pagination\Paginator;
+use PDOException;
 
 class QueryBuilder
 {
@@ -18,6 +19,7 @@ class QueryBuilder
     protected array $joins = [];
     protected array $bindings = [];
     protected ?string $model;
+    protected bool $inTransaction = false;
 
     public function __construct(PDO $connection, string $model = null)
     {
@@ -243,6 +245,92 @@ class QueryBuilder
 
             return $instance;
         }, $results);
+    }
+
+    /**
+     * Start a new database transaction
+     * @return bool
+     * @throws PDOException
+     */
+    public function beginTransaction(): bool
+    {
+        if ($this->inTransaction) {
+            throw new PDOException('Transaction already in progress');
+        }
+
+        if ($this->connection->beginTransaction()) {
+            $this->inTransaction = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Commit the active database transaction
+     * @return bool
+     * @throws PDOException
+     */
+    public function commit(): bool
+    {
+        if (!$this->inTransaction) {
+            throw new PDOException('There is no active transaction');
+        }
+
+        if ($this->connection->commit()) {
+            $this->inTransaction = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Rollback the active database transaction
+     * @return bool
+     * @throws PDOException
+     */
+    public function rollBack(): bool
+    {
+        if (!$this->inTransaction) {
+            throw new PDOException('There is no active transaction');
+        }
+
+        if ($this->connection->rollBack()) {
+            $this->inTransaction = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if there is an active transaction
+     * @return bool
+     */
+    public function hasActiveTransaction(): bool
+    {
+        return $this->inTransaction;
+    }
+
+    /**
+     * Execute a callback within a transaction
+     * @param callable $callback
+     * @return mixed
+     * @throws \Throwable
+     */
+    public function transaction(callable $callback)
+    {
+        $this->beginTransaction();
+
+        try {
+            $result = $callback($this);
+            $this->commit();
+            return $result;
+        } catch (\Throwable $e) {
+            $this->rollBack();
+            throw $e;
+        }
     }
 }
 

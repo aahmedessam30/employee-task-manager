@@ -16,13 +16,29 @@
                 <input type="hidden" name="_token" value="<?= csrf_token() ?>">
 
                 <div class="form-group mb-3">
-                    <label for="name">Name</label>
-                    <input type="text" name="name" id="name" class="form-control" value="<?= $employee->name ?>">
+                    <label for="first_name">First Name</label>
+                    <input type="text" name="first_name" id="first_name" class="form-control" value="<?= $employee->first_name ?>">
+                    <?php if (has_error('first_name')): ?>
+                        <small class="text-danger"><?= get_error('first_name') ?></small>
+                    <?php endif; ?>
                 </div>
+
+                <div class="form-group mb-3">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" name="last_name" id="last_name" class="form-control" value="<?= $employee->last_name ?>">
+                    <?php if (has_error('last_name')): ?>
+                        <small class="text-danger"><?= get_error('last_name') ?></small>
+                    <?php endif; ?>
+                </div>
+
                 <div class="form-group mb-3">
                     <label for="email">Email</label>
                     <input type="email" name="email" id="email" class="form-control" value="<?= $employee->email ?>">
+                    <?php if (has_error('email')): ?>
+                        <small class="text-danger"><?= get_error('email') ?></small>
+                    <?php endif; ?>
                 </div>
+
                 <div class="form-group mb-3">
                     <label for="department_id">Department</label>
                     <select name="department_id" id="department_id" class="form-control">
@@ -34,6 +50,7 @@
                         <?php endif; ?>
                     </select>
                 </div>
+
                 <div class="form-group mb-3">
                     <button type="submit" class="btn btn-primary">Update</button>
                 </div>

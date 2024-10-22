@@ -12,10 +12,17 @@
         <?php $errors = session()->get('errors'); ?>
 
         <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input type="text" id="name" name="name"
-                   class="form-control <?= isset($errors['name']) ? 'is-invalid' : '' ?>">
-            <?php if (isset($errors['name'])) echo "<span class='text-danger'>{$errors['name'][0]}</span>"; ?>
+            <label for="first_name" class="form-label">First Name</label>
+            <input type="text" id="first_name" name="first_name"
+                   class="form-control <?= isset($errors['first_name']) ? 'is-invalid' : '' ?>">
+            <?php if (isset($errors['first_name'])) echo "<span class='text-danger'>{$errors['first_name'][0]}</span>"; ?>
+        </div>
+
+        <div class="mb-3">
+            <label for="last_name" class="form-label">Last Name</label>
+            <input type="text" id="last_name" name="last_name"
+                   class="form-control <?= isset($errors['last_name']) ? 'is-invalid' : '' ?>">
+            <?php if (isset($errors['last_name'])) echo "<span class='text-danger'>{$errors['last_name'][0]}</span>"; ?>
         </div>
 
         <div class="mb-3">

@@ -241,3 +241,12 @@ function old($key, $default = '')
 {
     return session()->get('old')[$key] ?? $default;
 }
+
+function upload_image($file, $folder)
+{
+    $path     = public_path("uploads/$folder");
+    $filename = uniqid() . '_' . $file['name'];
+    move_uploaded_file($file['tmp_name'], "$path/$filename");
+
+    return asset("uploads/$folder/$filename");
+}

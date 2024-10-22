@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\RoleEnum;
 use App\Models\Department;
+use App\Models\Employee;
 use App\Models\User;
 use App\Requests\User\{StoreUserRequest, UpdateUserRequest};
 
@@ -36,14 +37,28 @@ class EmployeeController extends Controller
 
     public function store(StoreUserRequest $request)
     {
-        $data                   = $request->validated();
-        $data['password']       = password_hash($data['password'], PASSWORD_DEFAULT);
-        $data['remember_token'] = bin2hex(random_bytes(32));
-        $data['role']           = RoleEnum::EMPLOYEE->value;
+        try {
+            $db = db();
+            $db->beginTransaction();
 
-        User::create($data);
+            $data                   = $request->except('salary', 'image', 'password_confirmation');
+            $data['password']       = password_hash($data['password'], PASSWORD_DEFAULT);
+            $data['remember_token'] = bin2hex(random_bytes(32));
+            $data['role']           = RoleEnum::EMPLOYEE->value;
+            $user                   = User::create($data);
 
-        return redirect(route('employees.index'))->with('success', 'User created successfully');
+            Employee::create([
+                'user_id' => $user->id,
+                'salary'  => $request->salary,
+                'image'   => upload_image($request->file('image'), 'employees'),
+            ]);
+
+            $db->commit();
+            return redirect(route('employees.index'))->with('success', 'User created successfully');
+        } catch (\Exception $e) {
+            $db->rollBack();
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function edit($id)
@@ -60,21 +75,44 @@ class EmployeeController extends Controller
 
     public function update(UpdateUserRequest $request, $id)
     {
-        $employee = User::find($id);
+        try {
+            $db = db();
+            $db->beginTransaction();
 
-        if (!$employee) {
-            return back()->with('error', 'User not found');
+            $user = User::find($id);
+
+            if (!$user) {
+                return back()->with('error', 'Employee not found');
+            }
+
+            $data = $request->except('salary', 'image', 'password_confirmation');
+
+            if ($request->filled('password')) {
+                $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+            }
+
+            $user->update($data);
+
+            $employee = Employee::where('user_id', $user->id)->first();
+
+            if (!$employee) {
+                return back()->with('error', 'Employee not found');
+            }
+
+            $employeeData = $request->only('salary', 'image');
+
+            if ($request->hasFile('image')) {
+                $employeeData['image'] = upload_image($request->file('image'), 'employees');
+            }
+
+            $employee->update($employeeData);
+
+            $db->commit();
+            return redirect(route('employees.index'))->with('success', 'Employee updated successfully');
+        } catch (\Exception $e) {
+            $db->rollBack();
+            return back()->with('error', "Error updating employee");
         }
-
-        $data = $request->validated();
-
-        if ($request->filled('password')) {
-            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-        }
-
-        $employee->update($data);
-
-        return redirect(route('employees.index'))->with('success', 'User updated successfully');
     }
 
     public function destroy($id)

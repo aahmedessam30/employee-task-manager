@@ -89,9 +89,9 @@ class Request
         return array_intersect_key($this->all(), array_flip($keys));
     }
 
-    public function except($keys)
+    public function except(...$keys)
     {
-        return array_diff_key($this->all(), array_flip((array)$keys));
+        return array_diff_key($this->all(), array_flip($keys));
     }
 
     public function query($key = null, $default = null)

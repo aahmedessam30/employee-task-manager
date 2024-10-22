@@ -14,6 +14,6 @@ class Department extends Model
 
     public function getEmployeesCountAttribute()
     {
-        return db()->table('employees')->where('department_id', $this->id)->count();
+        return db()->table('users')->where('department_id', $this->id)->count();
     }
 }

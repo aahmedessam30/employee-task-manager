@@ -61,6 +61,11 @@ abstract class Model
     public static function create(array $attributes): static
     {
         $model = new static();
+
+        if (array_key_exists('_token', $attributes)) {
+            unset($attributes['_token']);
+        }
+
         $model->fill($attributes);
         $model->save();
         return $model;

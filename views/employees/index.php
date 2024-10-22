@@ -25,7 +25,7 @@
                     <?php foreach ($employees->items() as $employee) : ?>
                         <tr>
                             <td><?= $loop ?></td>
-                            <td><?= $employee->name ?></td>
+                            <td><?= $employee->full_name ?></td>
                             <td><?= $employee->email ?></td>
                             <td><?= $employee->department_name ?? '----' ?></td>
                             <td>
