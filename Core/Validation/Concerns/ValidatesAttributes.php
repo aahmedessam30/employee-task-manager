@@ -124,4 +124,117 @@ trait ValidatesAttributes
             $this->addError($field, 'The selected :attribute is invalid.');
         }
     }
+
+    protected function validateDate(string $field, array $parameters): void
+    {
+        $date = $this->data[$field] ?? null;
+        $date = date_create_from_format('Y-m-d', $date);
+
+        if (!$date) {
+            $this->addError($field, 'The :attribute field must be a valid date.');
+        }
+    }
+
+    protected function validateDatetime(string $field, array $parameters): void
+    {
+        $date = $this->data[$field] ?? null;
+        $date = date_create_from_format('Y-m-d H:i:s', $date);
+
+        if (!$date) {
+            $this->addError($field, 'The :attribute field must be a valid date and time.');
+        }
+    }
+
+    protected function validateTime(string $field, array $parameters): void
+    {
+        $date = $this->data[$field] ?? null;
+        $date = date_create_from_format('H:i:s', $date);
+
+        if (!$date) {
+            $this->addError($field, 'The :attribute field must be a valid time.');
+        }
+    }
+
+    protected function validateBefore(string $field, array $parameters): void
+    {
+        $date = $this->data[$field] ?? null;
+        $date = date_create_from_format('Y-m-d', $date);
+        $before = date_create_from_format('Y-m-d', $parameters[0]);
+
+        if ($date >= $before) {
+            $this->addError($field, 'The :attribute field must be a date before :date.');
+        }
+    }
+
+    protected function validateAfter(string $field, array $parameters): void
+    {
+        $date = $this->data[$field] ?? null;
+        $date = date_create_from_format('Y-m-d', $date);
+        $after = date_create_from_format('Y-m-d', $parameters[0]);
+
+        if ($date <= $after) {
+            $this->addError($field, 'The :attribute field must be a date after :date.');
+        }
+    }
+
+    protected function validateBeforeOrEqual(string $field, array $parameters): void
+    {
+        $date = $this->data[$field] ?? null;
+        $date = date_create_from_format('Y-m-d', $date);
+        $before = date_create_from_format('Y-m-d', $parameters[0]);
+
+        if ($date > $before) {
+            $this->addError($field, 'The :attribute field must be a date before or equal to :date.');
+        }
+    }
+
+    protected function validateAfterOrEqual(string $field, array $parameters): void
+    {
+        $date = $this->data[$field] ?? null;
+        $date = date_create_from_format('Y-m-d', $date);
+        $after = $parameters[0] === 'today' ? date_create('today') : date_create_from_format('Y-m-d', $parameters[0]);
+
+        if ($date < $after) {
+            $this->addError($field, 'The :attribute field must be a date after or equal to ' . $parameters[0] . '.');
+        }
+    }
+
+    protected function validateDateEquals(string $field, array $parameters): void
+    {
+        $date = $this->data[$field] ?? null;
+        $date = date_create_from_format('Y-m-d', $date);
+        $equals = date_create_from_format('Y-m-d', $parameters[0]);
+
+        if ($date != $equals) {
+            $this->addError($field, 'The :attribute field must be a date equal to :date.');
+        }
+    }
+
+    protected function validateDateFormat(string $field, array $parameters): void
+    {
+        $date = $this->data[$field] ?? null;
+        $date = date_create_from_format($parameters[0], $date);
+
+        if (!$date) {
+            $this->addError($field, 'The :attribute field must be a date with format :format.');
+        }
+    }
+
+    protected function validateDifferent(string $field, array $parameters): void
+    {
+        $otherField = $parameters[0];
+
+        if ($this->data[$field] === $this->data[$otherField]) {
+            $this->addError($field, 'The :attribute and :other must be different.');
+        }
+    }
+
+    protected function validateSame(string $field, array $parameters): void
+    {
+        $otherField = $parameters[0];
+
+        if ($this->data[$field] !== $this->data[$otherField]) {
+            $this->addError($field, 'The :attribute and :other must match.');
+        }
+    }
 }
