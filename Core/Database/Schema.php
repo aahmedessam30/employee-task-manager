@@ -229,4 +229,57 @@ class Schema
             self::createDatabase();
         }
     }
+
+    public static function migrate(): void
+    {
+        foreach (glob(base_path('database/migrations/*.php')) as $file) {
+            $file_name = basename($file);
+            $file      = require_once $file;
+            $migration = new $file;
+            $migration->up();
+        }
+        echo "Migration completed successfully.\n";
+    }
+
+    public static function rollback(): void
+    {
+        foreach (glob(base_path('database/migrations/*.php')) as $file) {
+            $file_name = basename($file);
+            $file      = require_once $file;
+            $migration = new $file;
+            $migration->down();
+        }
+        echo "Rollback completed successfully.\n";
+    }
+
+    public static function seed(): void
+    {
+        foreach (glob(base_path('database/seeders/*.php')) as $file) {
+            $seeder = str_replace('.php', '', basename($file));
+            $seeder = new ("Database\\Seeders\\$seeder");
+            $seeder->run();
+            echo sprintf("[%s] Seeded successfully.\n", $seeder::class);
+        }
+    }
+
+    public static function makeMigration($table): void
+    {
+        $table         = strtolower($table);
+        $migrationName = strtolower($table);
+        $migrationName = str_replace(['-', ' '], '_', $migrationName);
+        $migrationName = preg_replace('/[^a-zA-Z0-9_]/', '', $migrationName);
+        $migrationName = date('Y_m_d_His') . "_create_{$migrationName}_table";
+        $migrationFile = migrations_path("$migrationName.php");
+
+        if (file_exists($migrationFile)) {
+            echo "Migration already exists.\n";
+            return;
+        }
+
+        $stub = file_get_contents(stubs_path('migration.stub'));
+        $stub = str_replace('{{ $table }}', $table, $stub);
+
+        file_put_contents($migrationFile, $stub);
+        echo "Migration created successfully.\n";
+    }
 }

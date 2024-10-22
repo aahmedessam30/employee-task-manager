@@ -58,6 +58,11 @@ function views_path($path = ''): string
     return base_path('views' . ($path ? DIRECTORY_SEPARATOR . $path : $path));
 }
 
+function stubs_path($path = ''): string
+{
+    return base_path('stubs' . ($path ? DIRECTORY_SEPARATOR . $path : $path));
+}
+
 function asset($path): string
 {
     return url("public/$path");

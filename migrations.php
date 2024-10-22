@@ -1,14 +1,33 @@
 <?php
 
+require_once __DIR__ . '/vendor/autoload.php';
+
 use Core\Database\Schema;
 use Core\Support\Env;
 
-require_once __DIR__ . '/vendor/autoload.php';
+Env::load();
 
-Env::load(base_path('.env'));
+$commands = $argv;
+array_shift($commands);
 
-Schema::createDatabaseIfNotExists();
-
-foreach (glob(__DIR__ . '/database/migrations/*.php') as $file) {
-    require_once $file;
+if (empty($commands)) {
+    throw new Exception('No command provided');
 }
+
+if (!in_array($commands[0], ['migrate', 'rollback', 'seed', 'make:migration'])) {
+    throw new Exception('Invalid command');
+}
+
+if ($commands[0] === 'make:migration') {
+    if (!isset($argv[1])) {
+        throw new Exception('Migration name not provided');
+    }
+}
+
+match ($commands[0]) {
+    'migrate'        => Schema::migrate(),
+    'rollback'       => Schema::rollback(),
+    'seed'           => Schema::seed(),
+    'make:migration' => Schema::makeMigration($argv[array_key_last($argv)]),
+    default          => throw new Exception('Invalid command'),
+};

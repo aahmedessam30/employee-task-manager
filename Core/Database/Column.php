@@ -64,6 +64,12 @@ class Column
         return $this;
     }
 
+    public function virtualAs($expression)
+    {
+        $this->type .= " GENERATED ALWAYS AS ({$expression}) VIRTUAL";
+        return $this;
+    }
+
     public function references(string $column)
     {
         $this->type .= " REFERENCES {$column}";

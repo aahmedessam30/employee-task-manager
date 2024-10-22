@@ -7,7 +7,16 @@ abstract class Env
     /**
      * @throws \Exception
      */
-    public static function load($filePath)
+    public static function load($filePath = null)
+    {
+        $filePath = $filePath ?: base_path('.env');
+        self::loadFile($filePath);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private static function loadFile($filePath)
     {
         if (!file_exists($filePath)) {
             throw new \Exception('.env file not found.');
