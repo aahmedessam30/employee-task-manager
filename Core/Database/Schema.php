@@ -22,7 +22,7 @@ class Schema
     public static function drop(string $table): void
     {
         try {
-            $sql        = "DROP TABLE $table";
+            $sql        = "SET FOREIGN_KEY_CHECKS=0; DROP TABLE $table; SET FOREIGN_KEY_CHECKS=1;";
             $connection = Connection::getInstance();
             $connection->exec($sql);
             echo sprintf("Table [%s] dropped successfully.\n", $table);
@@ -48,8 +48,13 @@ class Schema
 
     public static function dropIfExists(string $table): void
     {
-        if (self::hasTable($table)) {
-            self::drop($table);
+        try {
+            $sql        = "SET FOREIGN_KEY_CHECKS=0; DROP TABLE IF EXISTS $table; SET FOREIGN_KEY_CHECKS=1;";
+            $connection = Connection::getInstance();
+            $connection->exec($sql);
+            echo sprintf("Table [%s] dropped successfully.\n", $table);
+        } catch (\PDOException $e) {
+            echo "Error dropping table '$table': " . $e->getMessage() . "\n";
         }
     }
 

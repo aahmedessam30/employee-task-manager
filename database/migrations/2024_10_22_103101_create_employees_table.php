@@ -13,7 +13,6 @@ return new class extends Migration {
             $table->foreignId('department_id')->nullable()->constrained()->cascadeOnUpdate()->nullOnDelete();
             $table->decimal('salary', 20)->default(0);
             $table->string('image')->nullable();
-            $table->rememberToken();
             $table->timestamps();
         });
     }
