@@ -186,11 +186,7 @@ function view($view, $data = [])
         throw new Exception(sprintf('View file [%s] not found.', $view));
     }
 
-    extract($data);
-
-    ob_start();
-    require $view;
-    return ob_get_clean();
+    return (new \Core\views\Layout())->setData($data)->setView($view)->render();
 }
 
 function session()
