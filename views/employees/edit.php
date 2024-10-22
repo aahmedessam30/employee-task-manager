@@ -7,6 +7,12 @@
 <div class="row">
     <div class="col-md-12">
         <h1>Edit Employee</h1>
+
+        <!-- Image -->
+        <div class="mb-3">
+            <img src="<?= asset('images/employees/' . $employee->image) ?>" alt="<?= $employee->first_name . ' ' . $employee->last_name ?>" class="img-thumbnail" style="width: 100px;">
+        </div>
+
         <form action="<?= route('employees.update', ['id' => $employee->id]) ?>" method="POST">
 
             <input type="hidden" name="_method" value="PUT">
@@ -46,6 +52,22 @@
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </select>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="salary">Salary</label>
+                <input type="number" name="salary" id="salary" class="form-control" value="<?= $employee->salary ?>">
+                <?php if (has_error('salary')): ?>
+                    <small class="text-danger"><?= get_error('salary') ?></small>
+                <?php endif; ?>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="image">Image</label>
+                <input type="file" name="image" id="image" class="form-control">
+                <?php if (has_error('image')): ?>
+                    <small class="text-danger"><?= get_error('image') ?></small>
+                <?php endif; ?>
             </div>
 
             <div class="form-group mb-3">

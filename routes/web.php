@@ -11,7 +11,7 @@ Route::group(['as' => 'auth.'], function () {
 });
 
 Route::group(['middleware' => 'auth'], function () {
-    Route::view('/', 'dashboard')->name('dashboard');
+    Route::get('/', 'HomeController@dashboard')->name('dashboard');
     Route::resource('employees', 'EmployeeController');
     Route::resource('departments', 'DepartmentController');
     Route::resource('tasks', 'TaskController');

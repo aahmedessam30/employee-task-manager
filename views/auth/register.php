@@ -72,4 +72,15 @@
 
 </form>
 
+<script>
+    document.getElementById('role').addEventListener('change', function () {
+        let departmentDiv = document.getElementById('department_div');
+        if (this.value === 'employee') {
+            departmentDiv.classList.remove('d-none');
+        } else {
+            departmentDiv.classList.add('d-none');
+        }
+    });
+</script>
+
 <?= $this->endSection('content') ?>

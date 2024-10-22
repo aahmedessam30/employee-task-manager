@@ -37,8 +37,9 @@ class EmployeeController extends Controller
 
     public function store(StoreUserRequest $request)
     {
+        $db = db();
+
         try {
-            $db = db();
             $db->beginTransaction();
 
             $data                   = $request->except('salary', 'image', 'password_confirmation');
