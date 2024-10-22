@@ -98,10 +98,6 @@ abstract class Model
 
     public function getAttribute(string $key): mixed
     {
-        if (in_array($key, static::$hidden)) {
-            return null;
-        }
-
         $value = $this->attributes[$key] ?? null;
 
         return in_array($key, static::$appends) ? $this->getAppendedAttribute($key) : $this->castAttribute($key, $value);
@@ -134,6 +130,15 @@ abstract class Model
     public function syncOriginal(): void
     {
         $this->syncAttributes();
+
+        foreach ($this->attributes as $key => $value) {
+            if (in_array($key, static::$hidden)) {
+                unset($this->attributes[$key]);
+            } else {
+                $this->attributes[$key] = $this->castAttribute($key, $value);
+            }
+        }
+
         $this->original = $this->attributes;
     }
 
