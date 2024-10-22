@@ -17,7 +17,8 @@ class Route
     public $namespace;
     public array $middleware = [];
     public array $where = [];
-    protected static array $spoofedMethods = ['PUT', 'PATCH', 'DELETE'];
+    protected array $parameters = [];
+    public static array $spoofedMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
     public function __construct($methods, $uri, $action)
     {
@@ -186,7 +187,7 @@ class Route
         return false;
     }
 
-    protected function matchesUri($request)
+    public function matchesUri($request)
     {
         if (str_starts_with(trim($request->getPathInfo(), '/'), 'public')) {
             return true;
@@ -196,7 +197,8 @@ class Route
         $path = '/' . trim($request->getPathInfo(), '/');
 
         if (preg_match($pattern, $path, $matches)) {
-            $parameters = $this->extractParameters($matches);
+            $parameters       = $this->extractParameters($matches);
+            $this->parameters = $parameters;
             $request->setRouteParameters($parameters);
             return true;
         }
@@ -296,5 +298,26 @@ class Route
         }
 
         return url($uri);
+    }
+
+    public static function current()
+    {
+        foreach (static::getRoutes() as $route) {
+            if ($route->matchesUri(request())) {
+                return $route;
+            }
+        }
+
+        return null;
+    }
+
+    public function parameters()
+    {
+        return $this->parameters;
+    }
+
+    public function parameter($key, $default = null)
+    {
+        return $this->parameters[$key] ?? $default;
     }
 }

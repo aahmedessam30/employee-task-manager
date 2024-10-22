@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Requests\auth;
+namespace App\Requests\Auth;
 
 use Core\Http\FormRequest;
 

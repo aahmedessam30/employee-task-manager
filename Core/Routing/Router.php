@@ -170,7 +170,7 @@ class Router
             if ($spoofedMethod) {
                 $spoofedMethod = strtoupper($spoofedMethod);
 
-                if (in_array($spoofedMethod, ['PUT', 'PATCH', 'DELETE'])) {
+                if (in_array($spoofedMethod, Route::$spoofedMethods)) {
                     return $spoofedMethod;
                 }
             }

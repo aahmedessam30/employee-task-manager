@@ -96,7 +96,7 @@ trait ValidatesAttributes
         }
     }
 
-    protected function validateSometimes(string $field, array $parameters): void
+    protected function valuidateSometimes(string $field, array $parameters): void
     {
         if (array_key_exists($field, $this->data)) {
             return;

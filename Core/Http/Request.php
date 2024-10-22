@@ -2,6 +2,7 @@
 
 namespace Core\Http;
 
+use Core\Routing\Route;
 use Core\Session\Session;
 use Random\RandomException;
 
@@ -275,5 +276,16 @@ class Request
     public function remove(string $key)
     {
         unset($this->post[$key]);
+    }
+
+    public function route($key = null, $default = null)
+    {
+        $route = Route::current();
+
+        if ($route) {
+            return $key ? ($route->parameter($key) ?? $default) : $route->parameters();
+        }
+
+        return $default;
     }
 }
