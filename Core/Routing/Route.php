@@ -9,7 +9,6 @@ use Core\Http\Request;
 class Route
 {
     protected static $router;
-
     public array $methods;
     public $uri;
     public $action;
@@ -18,6 +17,7 @@ class Route
     public $namespace;
     public array $middleware = [];
     public array $where = [];
+    protected static array $spoofedMethods = ['PUT', 'PATCH', 'DELETE'];
 
     public function __construct($methods, $uri, $action)
     {
@@ -76,12 +76,27 @@ class Route
         static::$router->group($attributes, $callback);
     }
 
-    public static function setRouter(Router $router)
+    public static function resource($uri, $controller)
+    {
+        return static::$router->resource($uri, $controller);
+    }
+
+    public static function apiResource($uri, $controller)
+    {
+        return static::$router->apiResource($uri, $controller);
+    }
+
+    public static function view($uri, $view)
+    {
+        return static::$router->view($uri, $view);
+    }
+
+    public static function setRouter(Router $router): void
     {
         static::$router = $router;
     }
 
-    public function name($name)
+    public function name($name): static
     {
         $this->name = $name;
 
@@ -92,13 +107,13 @@ class Route
         return $this;
     }
 
-    public function middleware($middleware)
+    public function middleware($middleware): static
     {
         $this->middleware = array_merge($this->middleware, (array)$middleware);
         return $this;
     }
 
-    public function namespace($namespace)
+    public function namespace($namespace): static
     {
         $this->namespace = "App\\Http\\Controllers\\$namespace";
         return $this;
@@ -153,8 +168,32 @@ class Route
             return false;
         }
 
+        $method = $request->method();
+
+        if (!in_array($method, $this->methods)) {
+            if ($request->method() === 'POST' &&
+                $request->input('_method') &&
+                in_array(strtoupper($request->input('_method')), $this->methods)) {
+                return $this->matchesUri($request);
+            }
+            return false;
+        }
+
+        if ($this->matchesUri($request)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function matchesUri($request)
+    {
+        if (str_starts_with(trim($request->getPathInfo(), '/'), 'public')) {
+            return true;
+        }
+
         $pattern = $this->getCompiledPattern();
-        $path    = '/' . trim($request->getPathInfo(), '/');
+        $path = '/' . trim($request->getPathInfo(), '/');
 
         if (preg_match($pattern, $path, $matches)) {
             $parameters = $this->extractParameters($matches);
@@ -256,6 +295,6 @@ class Route
             $uri = str_replace("{{$key}}", $value, $uri);
         }
 
-        return $uri;
+        return url($uri);
     }
 }

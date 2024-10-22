@@ -135,15 +135,79 @@ class Router
         return $merged;
     }
 
+    public function resource($uri, $controller)
+    {
+        $this->addRoute(['GET', 'HEAD'], $uri, $controller . '@index')->name("$uri.index");
+        $this->addRoute(['GET', 'HEAD'], "$uri/create", $controller . '@create')->name("$uri.create");
+        $this->addRoute(['POST'], $uri, $controller . '@store')->name("$uri.store");
+        $this->addRoute(['GET', 'HEAD'], "$uri/{id}", $controller . '@show')->name("$uri.show");
+        $this->addRoute(['GET', 'HEAD'], "$uri/{id}/edit", $controller . '@edit')->name("$uri.edit");
+        $this->addRoute(['PUT', 'PATCH'], "$uri/{id}", $controller . '@update')->name("$uri.update");
+        $this->addRoute(['DELETE'], "$uri/{id}", $controller . '@destroy')->name("$uri.destroy");
+    }
+
+    public function apiResource($uri, $controller)
+    {
+        $this->addRoute(['GET', 'HEAD'], $uri, $controller . '@index')->name("$uri.index");
+        $this->addRoute(['POST'], $uri, $controller . '@store')->name("$uri.store");
+        $this->addRoute(['GET', 'HEAD'], "$uri/{id}", $controller . '@show')->name("$uri.show");
+        $this->addRoute(['PUT', 'PATCH'], "$uri/{id}", $controller . '@update')->name("$uri.update");
+        $this->addRoute(['DELETE'], "$uri/{id}", $controller . '@destroy')->name("$uri.destroy");
+    }
+
+    public function view($uri, $view)
+    {
+        return $this->addRoute(['GET', 'HEAD'], $uri, fn() => view($view));
+    }
+
+    protected function handleMethodSpoofing($request): string
+    {
+        $method = $request->method();
+
+        if ($method === 'POST') {
+            $spoofedMethod = $request->input('_method');
+
+            if ($spoofedMethod) {
+                $spoofedMethod = strtoupper($spoofedMethod);
+
+                if (in_array($spoofedMethod, ['PUT', 'PATCH', 'DELETE'])) {
+                    return $spoofedMethod;
+                }
+            }
+        }
+
+        return $method;
+    }
+
     public function dispatch($request): void
     {
         try {
+            $originalMethod = $request->method();
+            $request->setMethod($this->handleMethodSpoofing($request));
+
             foreach ($this->routes as $route) {
                 if ($route->matches($request)) {
+                    if (str_contains($request->getUri(), 'public') && !str_contains($request->getUri(), 'index.php')) {
+                        $file = str_replace('/', DIRECTORY_SEPARATOR, base_path(trim($request->getUri(), '/')));
+
+                        if (file_exists($file)) {
+                            $response = response();
+                            $response->setContent(file_get_contents($file));
+                            $response->setHeader('Content-Type', mime_content_type($file));
+                            $response->setStatusCode(200);
+                            $response->send();
+                            return;
+                        }
+
+                        throw new \Exception("File not found", 404);
+                    }
+
                     $route->run($request)->send();
                     return;
                 }
             }
+
+            $request->setMethod($originalMethod);
             throw new \Exception("Route not found", 404);
         } catch (Exception $e) {
             ExceptionHandler::handle($e);

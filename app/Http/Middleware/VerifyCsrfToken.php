@@ -21,7 +21,7 @@ class VerifyCsrfToken implements Middleware
             throw new \Exception('CSRF token not found', 403);
         }
 
-        if (!hash_equals($request->session()->csrfToken(), $csrfToken)) {
+        if (!hash_equals(trim($csrfToken, ' '), trim(session()->csrfToken(), ' '))) {
             throw new \Exception('CSRF token mismatch', 403);
         }
 

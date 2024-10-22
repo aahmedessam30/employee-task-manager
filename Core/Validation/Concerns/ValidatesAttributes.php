@@ -43,7 +43,12 @@ trait ValidatesAttributes
 
     protected function validateUnique(string $field, array $parameters): void
     {
-        $this->addError($field, 'The :attribute has already been taken.');
+        $table  = $parameters[0];
+        $column = $parameters[1] ?? $field;
+
+        if (db()->table($table)->where($column, $this->data[$field])->exists()) {
+            $this->addError($field, 'The :attribute has already been taken.');
+        }
     }
 
     protected function validateConfirmed(string $field, array $parameters): void
@@ -57,6 +62,66 @@ trait ValidatesAttributes
     {
         if (!is_array($this->data[$field] ?? null)) {
             $this->addError($field, 'The :attribute field must be an array.');
+        }
+    }
+
+    protected function validateInteger(string $field, array $parameters): void
+    {
+        if (!is_int($this->data[$field] ?? null)) {
+            $this->addError($field, 'The :attribute field must be an integer.');
+        }
+    }
+
+    protected function validateNumeric(string $field, array $parameters): void
+    {
+        if (!is_numeric($this->data[$field] ?? null)) {
+            $this->addError($field, 'The :attribute field must be a number.');
+        }
+    }
+
+    protected function validateExists(string $field, array $parameters): void
+    {
+        $table  = $parameters[0];
+        $column = $parameters[1] ?? $field;
+
+        if (!db()->table($table)->where($column, $this->data[$field])->exists()) {
+            $this->addError($field, 'The selected :attribute is invalid.');
+        }
+    }
+
+    protected function validateNullable(string $field, array $parameters): void
+    {
+        if (!array_key_exists($field, $this->data) || $this->data[$field] === null) {
+            unset($this->data[$field]);
+        }
+    }
+
+    protected function validateSometimes(string $field, array $parameters): void
+    {
+        if (array_key_exists($field, $this->data)) {
+            return;
+        }
+
+        $this->data[$field] = null;
+    }
+
+    protected function validateRequiredIf(string $field, array $parameters): void
+    {
+        $otherField      = $parameters[0];
+        $expectedValues  = array_slice($parameters, 1);
+        $otherFieldValue = $this->data[$otherField] ?? null;
+
+        if (in_array($otherFieldValue, $expectedValues, true)) {
+            if (!isset($this->data[$field]) || $this->data[$field] === '') {
+                $this->addError($field, 'The :attribute field is required when :other is :value.');
+            }
+        }
+    }
+
+    protected function validateIn(string $field, array $parameters): void
+    {
+        if (!in_array($this->data[$field] ?? null, $parameters, true)) {
+            $this->addError($field, 'The selected :attribute is invalid.');
         }
     }
 }

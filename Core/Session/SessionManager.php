@@ -2,6 +2,8 @@
 
 namespace Core\Session;
 
+use Random\RandomException;
+
 class SessionManager
 {
     private static $instance = null;
@@ -85,8 +87,19 @@ class SessionManager
         session_write_close();
     }
 
+    /**
+     * @throws RandomException
+     */
     public function csrfToken(): string
     {
-        return $this->get('_token');
+        $token = $this->get('_token');
+
+        if (!$token) {
+            $token = bin2hex(random_bytes(32));
+            $token = str_replace(' ', '', $token);
+            $this->put('_token', $token);
+        }
+
+        return $token;
     }
 }

@@ -5,7 +5,8 @@
   "require": {
     "php": "^8.3",
     "ext-pdo": "*",
-    "ext-mbstring": "*"
+    "ext-mbstring": "*",
+    "ext-fileinfo": "*"
   },
   "license": "MIT",
   "autoload": {

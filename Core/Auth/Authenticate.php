@@ -109,7 +109,7 @@ class Authenticate
 
     public function check()
     {
-        return !is_null($this->user);
+        return !is_null($this->user) && $this->model::find($this->user->id);
     }
 
     public function id()
@@ -119,7 +119,7 @@ class Authenticate
 
     public function attempt(array $credentials)
     {
-        $user = $this->userModel()->where('email', $credentials['email'])->first();
+        $user = $this->model::where('email', $credentials['email'])->first();
 
         if ($user && password_verify($credentials['password'], $user->password)) {
             $this->login($user);

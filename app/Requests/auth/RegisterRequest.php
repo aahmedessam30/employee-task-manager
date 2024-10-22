@@ -14,9 +14,18 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'name'          => ['required', 'string', 'max:255'],
+            'email'         => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password'      => ['required', 'string', 'min:8', 'confirmed'],
+            'role'          => ['required', 'string', 'in:admin,employee'],
+            'department_id' => ['required_if:role,employee', 'nullable', 'numeric', 'exists:departments,id'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->input('role') !== 'employee') {
+            $this->merge(['department_id' => null]);
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Core\Support;
 
+use Core\Pagination\Paginator;
 use PDO;
 use Core\Database\{QueryBuilder, Connection};
 use Closure;
@@ -34,16 +35,27 @@ abstract class Model
     public static function find($id): ?static
     {
         $array = static::query()->where(static::$primaryKey, $id)->first();
-        return $array ? static::createModelInstance($array) : null;
+
+        return $array ?? null;
     }
 
     public static function all(): array
     {
         $models = static::query()->get();
 
-        return array_map(function ($model) {
-            return static::createModelInstance($model);
-        }, $models);
+        return $models ?? [];
+    }
+
+    public static function paginate($perPage = 10, $page = 1)
+    {
+        $total = static::query()->count();
+        $items = static::query()->limit($perPage)->offset(($page - 1) * $perPage)->get();
+
+        if (empty($items)) {
+            return new Paginator($perPage, $page, $total, []);
+        }
+
+        return new Paginator($perPage, $page, $total, array_map(fn($item) => static::createModelInstance($item), $items));
     }
 
     public static function create(array $attributes): static
@@ -76,6 +88,12 @@ abstract class Model
         foreach ($attributes as $key => $value) {
             $this->setAttribute($key, $value);
         }
+    }
+
+    public function prepare(array $attributes): void
+    {
+        $this->fill($attributes);
+        $this->syncOriginal();
     }
 
     public function getAttribute(string $key): mixed
@@ -156,9 +174,22 @@ abstract class Model
 
     protected function update($columns = []): void
     {
-        static::query()
-              ->where(static::$primaryKey, $this->getAttribute(static::$primaryKey))
-              ->update($columns ?: $this->attributes);
+        if (empty($columns)) {
+            $columns = array_intersect_key(
+                $this->attributes,
+                array_filter($this->attributes, function ($key) {
+                    return !array_key_exists($key, $this->original) || $this->attributes[$key] !== $this->original[$key];
+                }, ARRAY_FILTER_USE_KEY)
+            );
+        }
+
+        unset($columns[static::$primaryKey]);
+
+        if (!empty($columns)) {
+            static::query()
+                  ->where(static::$primaryKey, $this->getAttribute(static::$primaryKey))
+                  ->update($columns);
+        }
     }
 
     protected static function createModelInstance(array $attributes): static
@@ -205,7 +236,8 @@ abstract class Model
     public static function query(): QueryBuilder
     {
         static::initialize();
-        $query = (new QueryBuilder(static::$pdo))->table(static::getTable());
+
+        $query = (new QueryBuilder(static::$pdo, static::class))->table(static::getTable());
 
         foreach (static::$globalScopes as $scope) {
             $scope($query);
@@ -245,6 +277,10 @@ abstract class Model
     {
         if (method_exists($this, $scope = 'scope' . ucfirst($method))) {
             return static::callScope([$this, $scope], $parameters);
+        }
+
+        if (method_exists($this, $method)) {
+            return $this->$method(...$parameters);
         }
 
         return static::query()->$method(...$parameters);

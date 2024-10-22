@@ -3,6 +3,7 @@
 namespace Core\Database;
 
 use PDO;
+use Core\Pagination\Paginator;
 
 class QueryBuilder
 {
@@ -16,10 +17,12 @@ class QueryBuilder
     protected array $groups = [];
     protected array $joins = [];
     protected array $bindings = [];
+    protected ?string $model;
 
-    public function __construct(PDO $connection)
+    public function __construct(PDO $connection, string $model = null)
     {
         $this->connection = $connection;
+        $this->model      = $model;
     }
 
     public function table($table)
@@ -113,14 +116,15 @@ class QueryBuilder
         $sql = $this->compileSelect();
         $stmt = $this->connection->prepare($sql);
         $stmt->execute($this->bindings);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->parseToModel($results);
     }
 
     public function first()
     {
         $this->limit(1);
         $result = $this->get();
-        return $result ? $result[0] : null;
+        return $result ? $this->parseToModel([$result[0]])[0] : null;
     }
 
     public function insert(array $data)
@@ -165,7 +169,24 @@ class QueryBuilder
         return $stmt->rowCount();
     }
 
-    // Aggregate methods like count, sum, etc.
+    public function exists()
+    {
+        return $this->count() > 0;
+    }
+
+    public function paginate($perPage = 10, $page = 1)
+    {
+        $total = $this->count();
+        $items = $this->limit($perPage)->offset(($page - 1) * $perPage)->get();
+
+        return new Paginator($perPage, $page, $total, $items);
+    }
+
+    public function latest($column = 'created_at')
+    {
+        return $this->orderBy($column, 'desc');
+    }
+
     public function count()
     {
         return $this->aggregate('COUNT', '*');
@@ -203,6 +224,25 @@ class QueryBuilder
         $stmt->execute($this->bindings);
 
         return $stmt->fetchColumn();
+    }
+
+    public function parseToModel($results)
+    {
+        if (!$this->model) {
+            return $results;
+        }
+
+        return array_map(function ($result) {
+            $instance = new $this->model;
+
+            if ($result instanceof $this->model) {
+                return $result;
+            }
+
+            $instance->prepare($result);
+
+            return $instance;
+        }, $results);
     }
 }
 

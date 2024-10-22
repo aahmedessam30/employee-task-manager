@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use Core\Http\Middleware\Middleware;
 
-class Authenticate implements Middleware
+class RedirectIfAuthenticated implements Middleware
 {
     public function handle($request, $next)
     {

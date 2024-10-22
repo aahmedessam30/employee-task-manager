@@ -1,6 +1,10 @@
 <?php include views_path('layouts/header.php'); ?>
 
+<div class="container my-4">
+
 <h2>Login</h2>
+
+<?php include views_path('partials/alerts.php') ?>
 
 <form method="post" action="<?= route('auth.authenticate') ?>">
     <input type="hidden" name="_token" value="<?= csrf_token() ?>">
@@ -18,5 +22,7 @@
 
     <button type="submit" class="btn btn-primary">Login</button>
 </form>
+
+</div>
 
 <?php include views_path('layouts/footer.php'); ?>

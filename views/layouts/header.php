@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ems</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 200px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .content {
+            margin-left: 220px;
+            padding: 2rem;
+        }
+    </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -18,7 +36,7 @@
             <ul class="navbar-nav ms-auto">
                 <?php if (session()->has('user')): ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= route('auth.dashboard') ?>">Dashboard</a>
+                        <a class="nav-link" href="<?= route('dashboard') ?>">Dashboard</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="<?= route('auth.logout') ?>">Logout</a>
@@ -35,6 +53,3 @@
         </div>
     </div>
 </nav>
-<div class="container mt-4">
-
-    <?php include views_path('partials/alerts.php'); ?>

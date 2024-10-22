@@ -58,11 +58,9 @@ function views_path($path = ''): string
     return base_path('views' . ($path ? DIRECTORY_SEPARATOR . $path : $path));
 }
 
-function vite_asset($path): string
+function asset($path): string
 {
-    $manifest = json_decode(file_get_contents(public_path('dist/.vite/mainfest.json')), true);
-
-    return $manifest[$path] ?? $path;
+    return url("public/$path");
 }
 
 function env($key, $default = null)
@@ -217,4 +215,24 @@ function csrf_token()
 function url($path = ''): string
 {
     return request()->baseUrl() . ($path ? '/' . ltrim($path, '/') : $path);
+}
+
+function db()
+{
+    return new \Core\Database\QueryBuilder(\Core\Database\Connection::getInstance());
+}
+
+function has_error($key)
+{
+    return session()->has('errors') && session()->get('errors')->has($key);
+}
+
+function get_error($key)
+{
+    return session()->get('errors')->first($key);
+}
+
+function old($key, $default = '')
+{
+    return session()->get('old')[$key] ?? $default;
 }

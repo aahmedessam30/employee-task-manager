@@ -42,8 +42,17 @@ class Validator
 
     protected function validateField(string $field, array $rules): void
     {
+        if (in_array('nullable', $rules)) {
+            $this->validateNullable($field, []);
+            if (!array_key_exists($field, $this->data)) {
+                return;
+            }
+        }
+
         foreach ($rules as $rule) {
-            $this->validateRule($field, $rule);
+            if ($rule !== 'nullable') {
+                $this->validateRule($field, $rule);
+            }
         }
     }
 
@@ -55,6 +64,8 @@ class Validator
             [$rule, $paramString] = explode(':', $rule, 2);
             $parameters           = explode(',', $paramString);
         }
+
+        $rule = str_replace(' ', '', ucwords(str_replace('_', ' ', $rule)));
 
         $method = 'validate' . ucfirst($rule);
 

@@ -6,3 +6,9 @@ To run the migrations, navigate to the root directory of the project and run the
 ```bash
 php migrations.php
 ```
+
+## Seed Database
+To seed the database, navigate to the root directory of the project and run the following command:
+```bash
+php seed.php
+```

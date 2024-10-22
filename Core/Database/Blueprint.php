@@ -177,7 +177,7 @@ class Blueprint
 
     public function rememberToken()
     {
-        return $this->addColumn('remember_token', 'VARCHAR(100)');
+        return $this->addColumn('remember_token', 'VARCHAR(100)')->nullable();
     }
 
     public function foreignId(string $column)

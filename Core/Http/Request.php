@@ -39,7 +39,7 @@ class Request
         }
 
         Session::start();
-        Session::set('_token', session()->get('_token') ?? bin2hex(random_bytes(32)));
+        Session::set('_token', session()->csrfToken());
         Session::set('url', $this->getUri());
         Session::set('previous_url', $this->getReferer());
         Session::set('method', $this->method());
@@ -260,5 +260,20 @@ class Request
         }
 
         return null;
+    }
+
+    public function setMethod($method)
+    {
+        $this->server['REQUEST_METHOD'] = strtoupper($method);
+    }
+
+    public function merge(array $data)
+    {
+        $this->post = array_merge($this->post, $data);
+    }
+
+    public function remove(string $key)
+    {
+        unset($this->post[$key]);
     }
 }
