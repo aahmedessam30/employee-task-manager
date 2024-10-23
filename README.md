@@ -4,11 +4,17 @@ This is a simple employee task manager application. It is a web application that
 ## Run Migrations
 To run the migrations, navigate to the root directory of the project and run the following command:
 ```bash
-php migrations.php
+php migrations.php migrate
+```
+
+## Rollback Migrations
+To rollback the migrations, navigate to the root directory of the project and run the following command:
+```bash
+php migrations.php rollback
 ```
 
 ## Seed Database
 To seed the database, navigate to the root directory of the project and run the following command:
 ```bash
-php seed.php
+php migrations.php seed
 ```
