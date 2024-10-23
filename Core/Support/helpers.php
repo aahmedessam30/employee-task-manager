@@ -246,3 +246,12 @@ function upload_image($file, $folder)
 
     return asset("uploads/$folder/$filename");
 }
+
+function str_is($pattern, $value)
+{
+    $pattern = preg_quote($pattern, '#');
+    $pattern = str_replace('\*', '.*', $pattern) . '\z';
+    $value   = trim($value, '/') . '/';
+
+    return (bool) preg_match('#^' . $pattern . '#', $value);
+}

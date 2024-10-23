@@ -150,6 +150,17 @@ class Route
         return $this;
     }
 
+    public function is($route)
+    {
+        $current = static::current();
+
+        if (!$current) {
+            return false;
+        }
+
+        return $current->getName() === $route;
+    }
+
     protected function getCompiledPattern(): string
     {
         $pattern = '/' . trim($this->uri, '/');

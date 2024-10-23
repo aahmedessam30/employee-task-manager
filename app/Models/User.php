@@ -24,4 +24,24 @@ class User extends Model
     {
         return Department::find($this->department_id)->name ?? null;
     }
+
+    public function isEmployee()
+    {
+        return $this->role === RoleEnum::EMPLOYEE->value;
+    }
+
+    public function isManager()
+    {
+        return $this->role === RoleEnum::MANAGER->value;
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === RoleEnum::ADMIN->value;
+    }
+
+    public function isNotEmployee()
+    {
+        return !$this->isEmployee();
+    }
 }

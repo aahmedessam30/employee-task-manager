@@ -316,4 +316,9 @@ class Request
 
         return $default;
     }
+
+    public function is($pattern)
+    {
+        return str_is($pattern, $this->getPathInfo());
+    }
 }

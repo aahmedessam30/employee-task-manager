@@ -4,16 +4,18 @@
             <a class="nav-link <?= request()->fullUrl() == route('dashboard') ? 'active' : '' ?>"
                href="<?= route('dashboard') ?>">Dashboard</a>
         </li>
+        <?php if (auth()->user()->isNotEmployee()) : ?>
+            <li class="nav-item">
+                <a class="nav-link <?= request()->is('departments/*') ? 'active' : '' ?>"
+                   href="<?= route('departments.index') ?>">Departments</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?= request()->is('employees/*') ? 'active' : '' ?>"
+                   href="<?= route('employees.index') ?>">Employees</a>
+            </li>
+        <?php endif; ?>
         <li class="nav-item">
-            <a class="nav-link <?= request()->fullUrl() == route('departments.index') ? 'active' : '' ?>"
-               href="<?= route('departments.index') ?>">Departments</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link <?= request()->fullUrl() == route('employees.index') ? 'active' : '' ?>"
-               href="<?= route('employees.index') ?>">Employees</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link <?= request()->fullUrl() == route('tasks.index') ? 'active' : '' ?>"
+            <a class="nav-link <?= request()->is('tasks/*') ? 'active' : '' ?>"
                href="<?= route('tasks.index') ?>">Tasks</a>
         </li>
         <li class="nav-item">
