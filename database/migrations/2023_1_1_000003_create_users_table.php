@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string('full_name')->virtualAs('CONCAT(first_name, " ", last_name)');
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('image')->nullable();
             $table->string('role')->default(RoleEnum::ADMIN->value);
             $table->rememberToken();
             $table->timestamps();

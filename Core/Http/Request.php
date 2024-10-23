@@ -14,6 +14,7 @@ class Request
     protected $files;
     protected $cookies;
     protected $headers;
+    protected $query;
 
     public function __construct()
     {
@@ -22,6 +23,7 @@ class Request
         $this->server  = $_SERVER;
         $this->files   = $_FILES;
         $this->cookies = $_COOKIE;
+        $this->query   = $this->parseQueryString();
         $this->headers = $this->getHeaders();
     }
 
@@ -63,10 +65,15 @@ class Request
         return array_merge($this->get, $this->post);
     }
 
-    public function input($key, $default = null)
+    public function input($key = null, $default = null)
     {
-        $data = $this->all();
-        return $data[$key] ?? $default;
+        $input = array_merge($this->query, $this->all());
+
+        if (is_null($key)) {
+            return $input;
+        }
+
+        return $input[$key] ?? $default;
     }
 
     public function filled($key)
@@ -94,9 +101,30 @@ class Request
         return array_diff_key($this->all(), array_flip($keys));
     }
 
-    public function query($key = null, $default = null)
+    protected function parseQueryString(): array
     {
-        return $key ? ($this->get[$key] ?? $default) : $this->get;
+        $queryString = parse_url($this->getUri(), PHP_URL_QUERY) ?? '';
+        $result = [];
+
+        if ($queryString !== '') {
+            parse_str($queryString, $result);
+        }
+
+        return $result;
+    }
+
+    public function query(?string $key = null, $default = null)
+    {
+        if (is_null($key)) {
+            return $this->query;
+        }
+
+        return $this->query[$key] ?? $default;
+    }
+
+    public function hasQuery(string $key): bool
+    {
+        return isset($this->query[$key]);
     }
 
     public function post($key = null, $default = null)

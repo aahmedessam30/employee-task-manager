@@ -237,4 +237,11 @@ trait ValidatesAttributes
             $this->addError($field, 'The :attribute and :other must match.');
         }
     }
+
+    protected function validateRegex(string $field, array $parameters): void
+    {
+        if (!preg_match($parameters[0], $this->data[$field] ?? '')) {
+            $this->addError($field, 'The :attribute field format is invalid, you must provide at least one uppercase letter, one lowercase letter, one number, and one special character.');
+        }
+    }
 }

@@ -3,14 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\Department;
+use App\Models\User;
 use App\Requests\Department\StoreDepartmentRequest;
 use App\Requests\Department\UpdateDepartmentRequest;
+use Core\Http\Request;
 
 class DepartmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $departments = Department::latest('id')->paginate(20);
+        $departments = Department::when($request->filled('search'), function ($query) use ($request) {
+            return $query->where(function ($query) use ($request) {
+                $query
+                    ->where('name', 'like', "%{$request->search}%")
+                    ->orWhere('description', 'like', "%{$request->search}%")
+                    ->orWhere(function ($query) use ($request) {
+                        $query->join('users', 'departments.id', '=', 'users.department_id')
+                            ->join('employees', function ($join) use ($request) {
+                                $join->on('users.id', '=', 'employees.user_id')
+                                    ->whereBetween('salary', [0, $request->search]);
+                            });
+                    });
+            });
+        })
+          ->latest('id')->paginate(20);
 
         return view('departments.index', compact('departments'));
     }
@@ -75,6 +91,10 @@ class DepartmentController extends Controller
 
             if (!$department) {
                 return back()->with('error', 'Department not found');
+            }
+
+            if (User::where('department_id', $department->id)->exists()) {
+                return back()->with('error', 'Department has employees');
             }
 
             $department->delete();

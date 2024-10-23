@@ -18,6 +18,7 @@
         <th>#</th>
         <th>Name</th>
         <th>Employees</th>
+        <th>Salary</th>
         <th>Actions</th>
     </tr>
     </thead>
@@ -29,6 +30,7 @@
                 <td><?= $loop++ ?></td>
                 <td><?= $department->name ?></td>
                 <td><?= $department->employees_count ?></td>
+                <td><?= $department->employees_salary ?></td>
                 <td>
                     <a href="<?= route('departments.edit', ['id' => $department->id]) ?>"
                        class="btn btn-sm btn-warning">Edit</a>
@@ -39,7 +41,7 @@
         <?php endforeach; ?>
     <?php else: ?>
         <tr>
-            <td colspan="4" class="text-center">No departments found.</td>
+            <td colspan="5" class="text-center">No departments found.</td>
         </tr>
     <?php endif; ?>
     </tbody>

@@ -194,7 +194,7 @@ class Route
         }
 
         $pattern = $this->getCompiledPattern();
-        $path = '/' . trim($request->getPathInfo(), '/');
+        $path    = parse_url('/' . trim($request->getPathInfo(), '/'), PHP_URL_PATH);
 
         if (preg_match($pattern, $path, $matches)) {
             $parameters       = $this->extractParameters($matches);

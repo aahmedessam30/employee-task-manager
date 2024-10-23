@@ -10,7 +10,7 @@
 
         <!-- Image -->
         <div class="mb-3">
-            <img src="<?= asset('images/employees/' . $employee->image) ?>" alt="<?= $employee->first_name . ' ' . $employee->last_name ?>" class="img-thumbnail" style="width: 100px;">
+            <img src="<?= $employee->image ?>" alt="<?= $employee->first_name . ' ' . $employee->last_name ?>" class="img-thumbnail" style="width: 100px;">
         </div>
 
         <form action="<?= route('employees.update', ['id' => $employee->id]) ?>" method="POST">

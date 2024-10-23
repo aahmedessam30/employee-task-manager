@@ -7,7 +7,7 @@
 
 <?php include views_path('partials/header.php'); ?>
 
-<div class="container my-4">
+<div class="container mb-4" style="margin-top: 80px !important;">
 
     <?= $this->include('partials.alerts') ?>
 

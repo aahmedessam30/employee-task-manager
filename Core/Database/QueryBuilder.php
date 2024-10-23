@@ -2,6 +2,7 @@
 
 namespace Core\Database;
 
+use Closure;
 use PDO;
 use Core\Pagination\Paginator;
 use PDOException;
@@ -24,7 +25,7 @@ class QueryBuilder
     public function __construct(PDO $connection, string $model = null)
     {
         $this->connection = $connection;
-        $this->model      = $model;
+        $this->model = $model;
     }
 
     public function table($table)
@@ -39,15 +40,96 @@ class QueryBuilder
         return $this;
     }
 
-    public function where($column, $operator = '=', $value = null)
+    public function where($column, $operator = null, $value = null)
     {
-        if (func_num_args() == 2) {
+        return $this->whereHandler($column, $operator, $value);
+    }
+
+    public function orWhere($column, $operator = null, $value = null)
+    {
+        return $this->whereHandler($column, $operator, $value, 'OR');
+    }
+
+    protected function whereHandler($column, $operator = null, $value = null, $boolean = 'AND')
+    {
+        // Handle closure for nested wheres
+        if ($column instanceof Closure) {
+            return $this->whereNested($column, $boolean);
+        }
+
+        // Handle array of where conditions
+        if (is_array($column)) {
+            foreach ($column as $key => $value) {
+                $this->where($key, '=', $value);
+            }
+            return $this;
+        }
+
+        // Handle two argument case (column, value)
+        if ($value === null) {
             $value = $operator;
             $operator = '=';
         }
 
-        $this->wheres[] = "$column $operator ?";
-        $this->bindings[] = $value;
+        // List of valid operators
+        $validOperators = ['=', '!=', '<', '>', '<=', '>=', 'LIKE', 'NOT LIKE', 'IN', 'NOT IN', 'IS', 'IS NOT'];
+
+        $operator = strtoupper($operator);
+
+        // Handle NULL values
+        if ($value === null) {
+            if ($operator === '=') {
+                $operator = 'IS';
+            } elseif ($operator === '!=') {
+                $operator = 'IS NOT';
+            }
+        }
+
+        $prefix = empty($this->wheres) ? '' : $boolean;
+
+        // For IN and NOT IN operators
+        if (in_array($operator, ['IN', 'NOT IN']) && is_array($value)) {
+            $placeholders = rtrim(str_repeat('?,', count($value)), ',');
+            $this->wheres[] = trim("$prefix $column $operator ($placeholders)");
+            $this->bindings = array_merge($this->bindings, array_values($value));
+            return $this;
+        }
+
+        // For NULL comparisons
+        if (in_array($operator, ['IS', 'IS NOT'])) {
+            $this->wheres[] = trim("$prefix $column $operator NULL");
+            return $this;
+        }
+
+        // For standard operators
+        if (in_array($operator, $validOperators)) {
+            $this->wheres[] = trim("$prefix $column $operator ?");
+            $this->bindings[] = $value;
+            return $this;
+        }
+
+        throw new \InvalidArgumentException("Invalid operator: $operator");
+    }
+
+    protected function whereNested(Closure $callback, $boolean = 'AND')
+    {
+        $query = new static($this->connection);
+        $callback($query);
+
+        if (count($query->wheres)) {
+            $prefix         = empty($this->wheres) ? '' : $boolean;
+            $this->wheres[] = trim("$prefix (" . implode(' ', $query->wheres) . ")");
+            $this->bindings = array_merge($this->bindings, $query->bindings);
+        }
+
+        return $this;
+    }
+
+    public function when($value, Closure $callback)
+    {
+        if ($value) {
+            $callback($this);
+        }
 
         return $this;
     }
@@ -76,10 +158,28 @@ class QueryBuilder
         return $this;
     }
 
-    public function join($table, $first, $operator, $second, $type = 'inner')
+    public function join($table, $first = null, $operator = null, $second = null, $type = 'inner')
     {
-        $this->joins[] = "$type join $table on $first $operator $second";
+        if ($first instanceof Closure) {
+            $join = new JoinClause($type, $table);
+            $first($join);
+            $this->joins[]  = $join;
+            $this->bindings = array_merge($this->bindings, $join->getBindings());
+        } else {
+            $this->joins[] = "$type JOIN $table ON $first $operator $second";
+        }
+
         return $this;
+    }
+
+    public function leftJoin($table, $first, $operator = null, $second = null)
+    {
+        return $this->join($table, $first, $operator, $second, 'LEFT');
+    }
+
+    public function rightJoin($table, $first, $operator = null, $second = null)
+    {
+        return $this->join($table, $first, $operator, $second, 'RIGHT');
     }
 
     protected function compileSelect()
@@ -87,7 +187,13 @@ class QueryBuilder
         $sql = "SELECT " . implode(', ', $this->columns) . " FROM $this->table";
 
         if ($this->joins) {
-            $sql .= " " . implode(' ', $this->joins);
+            foreach ($this->joins as $join) {
+                $sql .= $join instanceof JoinClause ? ' ' . $join->toSql() : ' ' . $join;
+
+                if ($join instanceof JoinClause) {
+                    $this->bindings = array_merge($this->bindings, $join->getBindings());
+                }
+            }
         }
 
         if ($this->wheres) {
@@ -218,11 +324,18 @@ class QueryBuilder
     {
         $sql = "SELECT $function($column) AS aggregate FROM $this->table";
 
+        if ($this->joins) {
+            foreach ($this->joins as $join) {
+                $sql .= $join instanceof JoinClause ? ' ' . $join->toSql() : ' ' . $join;
+            }
+        }
+
         if ($this->wheres) {
             $sql .= " WHERE " . implode(' AND ', $this->wheres);
         }
 
         $stmt = $this->connection->prepare($sql);
+
         $stmt->execute($this->bindings);
 
         return $stmt->fetchColumn();

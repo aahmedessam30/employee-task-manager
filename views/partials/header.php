@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top" style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)">
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top" style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); margin-bottom: 70px!important;">
     <div class="container-fluid">
         <a class="navbar-brand" href="<?= route('home') ?>">Employee Management System</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"

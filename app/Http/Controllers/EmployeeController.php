@@ -46,13 +46,10 @@ class EmployeeController extends Controller
             $data['password']       = password_hash($data['password'], PASSWORD_DEFAULT);
             $data['remember_token'] = bin2hex(random_bytes(32));
             $data['role']           = RoleEnum::EMPLOYEE->value;
+            $data['image']          = upload_image($request->file('image'), 'employees');
             $user                   = User::create($data);
 
-            Employee::create([
-                'user_id' => $user->id,
-                'salary'  => $request->salary,
-                'image'   => upload_image($request->file('image'), 'employees'),
-            ]);
+            Employee::create(['user_id' => $user->id, 'salary'  => $request->salary]);
 
             $db->commit();
             return redirect(route('employees.index'))->with('success', 'User created successfully');

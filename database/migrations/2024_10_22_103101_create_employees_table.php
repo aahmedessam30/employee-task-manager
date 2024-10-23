@@ -11,7 +11,6 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->decimal('salary', 20)->default(0);
-            $table->string('image')->nullable();
             $table->timestamps();
         });
     }
